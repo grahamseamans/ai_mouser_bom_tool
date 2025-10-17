@@ -1,0 +1,28 @@
+{
+  "name": "ai-mouser-bom-tool",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p .",
+    "start": "tsx src/index.ts",
+    "resistors": "tsx src/index.ts resistors bom_example.csv",
+    "check": "tsc -p . --noEmit",
+    "server:dev": "npm --prefix server run dev",
+    "web:dev": "npm --prefix web run dev",
+    "dev": "concurrently -c blue,magenta -n server,web \"npm:server:dev\" \"npm:web:dev\"",
+    "setup": "npm --prefix server install && npm --prefix web install"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "csv-parse": "^5.5.6",
+    "dotenv": "^16.4.5",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "concurrently": "^8.2.2",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  }
+}
