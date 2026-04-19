@@ -16,36 +16,42 @@ export type MouserPart = {
 };
 
 export class MouserClient {
-  private apiKey?: string;
+  private apiKey: string;
+
   constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.MOUSER_API_KEY;
+    const key = apiKey || process.env.MOUSER_API_KEY;
+    if (!key) throw new Error('MOUSER_API_KEY is required');
+    this.apiKey = key;
   }
-  get enabled() {
-    return !!this.apiKey;
-  }
-  async searchKeyword(keyword: string, records = 50): Promise<MouserPart[]> {
-    if (!this.enabled) return [];
-    const url = `https://api.mouser.com/api/v1/search/keyword?apiKey=${encodeURIComponent(this.apiKey!)}`;
+
+  async searchKeyword(keyword: string, records = 50, inStockOnly = false): Promise<MouserPart[]> {
+    const url = `https://api.mouser.com/api/v1/search/keyword?apiKey=${encodeURIComponent(this.apiKey)}`;
     const body = {
       SearchByKeywordRequest: {
         keyword,
         records,
-        searchOptions: 'ExactAndSimilar',
+        searchOptions: inStockOnly ? 'InStock' : 'ExactAndSimilar',
         searchWithYourSignUpLanguage: false,
       },
     };
+
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json', accept: 'application/json' },
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error(`Mouser keyword error ${res.status}`);
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Mouser keyword search failed (${res.status}): ${errText}`);
+    }
+
     const json: any = await res.json();
     return json?.SearchResults?.Parts ?? [];
   }
+
   async searchPartNumber(mouserPartNumber: string): Promise<MouserPart[]> {
-    if (!this.enabled) return [];
-    const url = `https://api.mouser.com/api/v1/search/partnumber?apiKey=${encodeURIComponent(this.apiKey!)}`;
+    const url = `https://api.mouser.com/api/v1/search/partnumber?apiKey=${encodeURIComponent(this.apiKey)}`;
     const body = {
       SearchByPartRequest: {
         mouserPartNumber,
@@ -53,14 +59,19 @@ export class MouserClient {
         mouserPaysCustomsAndDuties: false,
       },
     };
+
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json', accept: 'application/json' },
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error(`Mouser part error ${res.status}`);
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Mouser part number search failed (${res.status}): ${errText}`);
+    }
+
     const json: any = await res.json();
     return json?.SearchResults?.Parts ?? [];
   }
 }
-
