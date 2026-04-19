@@ -74,7 +74,7 @@ server.tool(
     records: z.number().min(1).max(50).default(50).describe('Max results to return (1-50)'),
     inStockOnly: z.boolean().default(false).describe('Only return in-stock parts'),
   },
-  async ({ keyword, records, inStockOnly }) => {
+  async ({ keyword, records, inStockOnly }: { keyword: string; records: number; inStockOnly: boolean }) => {
     const parts = await client.searchKeyword(keyword, records, inStockOnly);
     const filepath = await writeSearchResults(keyword, parts);
 
@@ -95,7 +95,7 @@ server.tool(
   {
     partNumber: z.string().describe('Mouser or manufacturer part number'),
   },
-  async ({ partNumber }) => {
+  async ({ partNumber }: { partNumber: string }) => {
     const parts = await client.searchPartNumber(partNumber);
     const filepath = await writeSearchResults(partNumber, parts);
 
